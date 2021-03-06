@@ -5,7 +5,7 @@
 
 # appconfig
 
-A simple configuration file manager for applications.
+A simple configuration file manager for desktop applications.
 
 The configuration file is read from and written to the following locations.
 

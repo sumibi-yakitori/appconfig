@@ -1,10 +1,10 @@
 [package]
 name = "appconfig"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["sumibi-yakitori <nekosoft360@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "A simple configuration file manager for applications"
+description = "A simple configuration file manager for desktop applications"
 homepage = "https://github.com/sumibi-yakitori/appconfig"
 documentation = "https://docs.rs/appconfig"
 repository = "https://github.com/sumibi-yakitori/appconfig"

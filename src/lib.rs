@@ -1,4 +1,4 @@
-//! A simple configuration file manager for applications.
+//! A simple configuration file manager for desktop applications.
 //!
 //! The configuration file is read from and written to the following locations.
 //!
@@ -45,6 +45,13 @@ pub use serde;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{cell::RefCell, error::Error, path::PathBuf, rc::Rc};
 
+/// A manager that manages a single configuration file.
+///
+/// By default, the configuration file will be saved automatically when the manager is dropped.
+/// The name of the folder where the configuration file will be saved will be the FQDN consisting of the specified organization name and application name.
+///
+/// e.g.
+/// `com.{organization_name}.{app_name}/app_config.toml`
 pub struct AppConfigManager<T>
 where
   T: Sized + Serialize + DeserializeOwned,
