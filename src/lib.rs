@@ -3,9 +3,9 @@ use std::{error::Error, marker::PhantomData, path::PathBuf};
 
 // pub trait AppConfig: Sized + Serialize + DeserializeOwned + Default {}
 
-pub struct AppConfigManager<'a, T: Sized + Serialize + DeserializeOwned + Default> {
-  organization_name: &'a str,
-  app_name: &'a str,
+pub struct AppConfigManager<T: Sized + Serialize + DeserializeOwned + Default> {
+  organization_name: String,
+  app_name: String,
   auto_recovery: bool,
   // options: AppConfigManagerOptions<'a>,
   _marker: PhantomData<fn() -> T>,
@@ -14,11 +14,11 @@ pub struct AppConfigManager<'a, T: Sized + Serialize + DeserializeOwned + Defaul
 // #[derive(Debug, Clone, PartialEq)]
 // pub struct AppConfigManagerOptions<'a> { }
 
-impl<'a, T: Sized + Serialize + DeserializeOwned + Default> AppConfigManager<'a, T> {
-  pub fn new(organization_name: &'a str) -> Self {
+impl<T: Sized + Serialize + DeserializeOwned + Default> AppConfigManager<T> {
+  pub fn new(organization_name: impl Into<String>) -> Self {
     Self {
-      organization_name,
-      app_name: std::env!("CARGO_CRATE_NAME"),
+      organization_name: organization_name.into(),
+      app_name: std::env!("CARGO_CRATE_NAME").into(),
       auto_recovery: true,
       _marker: Default::default(),
     }
@@ -34,22 +34,22 @@ impl<'a, T: Sized + Serialize + DeserializeOwned + Default> AppConfigManager<'a,
     self
   }
 
-  pub fn set_organization_name(&mut self, value: &'a str) -> &mut Self {
-    self.organization_name = value;
+  pub fn set_organization_name(&mut self, value: impl Into<String>) -> &mut Self {
+    self.organization_name = value.into();
     self
   }
 
-  pub fn with_organization_name(mut self, value: &'a str) -> Self {
+  pub fn with_organization_name(mut self, value: impl Into<String>) -> Self {
     self.set_organization_name(value);
     self
   }
 
-  pub fn set_app_name(&mut self, value: &'a str) -> &mut Self {
-    self.app_name = value;
+  pub fn set_app_name(&mut self, value: impl Into<String>) -> &mut Self {
+    self.app_name = value.into();
     self
   }
 
-  pub fn with_app_name(mut self, value: &'a str) -> Self {
+  pub fn with_app_name(mut self, value: impl Into<String>) -> Self {
     self.set_app_name(value);
     self
   }
