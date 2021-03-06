@@ -34,7 +34,12 @@
 //!
 //! fn main() {
 //!   let config = Rc::from(RefCell::from(MyAppConfig::default()));
-//!   let manager = AppConfigManager::new(config.clone(), "sumibi-yakitori");
+//!   let manager = AppConfigManager::new(
+//!     config.clone(),
+//!     std::env!("CARGO_CRATE_NAME"), // CRATE_BIN_NAME etc..,
+//!     "sumibi-yakitori",
+//!   );
+//!
 //!   manager.save().unwrap();
 //!   manager.load().unwrap();
 //!   assert_eq!(*config.borrow(), MyAppConfig::default());
@@ -67,11 +72,15 @@ impl<T> AppConfigManager<T>
 where
   T: Sized + Serialize + DeserializeOwned,
 {
-  pub fn new(data: Rc<RefCell<T>>, organization_name: impl Into<String>) -> Self {
+  pub fn new(
+    data: Rc<RefCell<T>>,
+    app_name: impl Into<String>,
+    organization_name: impl Into<String>,
+  ) -> Self {
     Self {
       data,
       organization_name: organization_name.into(),
-      app_name: std::env!("CARGO_CRATE_NAME").into(),
+      app_name: app_name.into(),
       auto_saving: true,
       skip_parsing_error_when_loading: true,
     }
@@ -186,7 +195,11 @@ mod tests {
   #[test]
   fn it_works() {
     let config = Rc::from(RefCell::from(MyAppConfig::default()));
-    let manager = AppConfigManager::new(config.clone(), "sumibi-yakitori");
+    let manager = AppConfigManager::new(
+      config.clone(),
+      std::env!("CARGO_CRATE_NAME"), // CRATE_BIN_NAME etc..,
+      "sumibi-yakitori",
+    );
     manager.save().unwrap();
     manager.load().unwrap();
     assert_eq!(*config.borrow(), MyAppConfig::default());

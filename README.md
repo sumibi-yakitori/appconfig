@@ -41,7 +41,12 @@ impl Default for MyAppConfig {
 
 fn main() {
   let config = Rc::from(RefCell::from(MyAppConfig::default()));
-  let manager = AppConfigManager::new(config.clone(), "sumibi-yakitori");
+  let manager = AppConfigManager::new(
+    config.clone(),
+    std::env!("CARGO_CRATE_NAME"), // CRATE_BIN_NAME etc..,
+    "sumibi-yakitori",
+  );
+
   manager.save().unwrap();
   manager.load().unwrap();
   assert_eq!(*config.borrow(), MyAppConfig::default());
