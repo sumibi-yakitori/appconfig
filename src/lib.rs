@@ -1,26 +1,35 @@
 use serde::{de::DeserializeOwned, Serialize};
-use std::{error::Error, marker::PhantomData, path::PathBuf};
+use std::{cell::RefCell, error::Error, marker::PhantomData, path::PathBuf, rc::Rc};
 
 // pub trait AppConfig: Sized + Serialize + DeserializeOwned + Default {}
 
-pub struct AppConfigManager<T: Sized + Serialize + DeserializeOwned + Default> {
+pub struct AppConfigManager<T>
+where
+  T: Sized + Serialize + DeserializeOwned + Default,
+{
+  data: Rc<RefCell<T>>,
   organization_name: String,
   app_name: String,
   auto_recovery: bool,
+  auto_saving: bool,
   // options: AppConfigManagerOptions<'a>,
-  _marker: PhantomData<fn() -> T>,
+  // _marker: PhantomData<fn() -> T>,
 }
 
 // #[derive(Debug, Clone, PartialEq)]
 // pub struct AppConfigManagerOptions<'a> { }
 
-impl<T: Sized + Serialize + DeserializeOwned + Default> AppConfigManager<T> {
-  pub fn new(organization_name: impl Into<String>) -> Self {
+impl<T> AppConfigManager<T>
+where
+  T: Sized + Serialize + DeserializeOwned + Default,
+{
+  pub fn new(data: Rc<RefCell<T>>, organization_name: impl Into<String>) -> Self {
     Self {
+      data,
       organization_name: organization_name.into(),
       app_name: std::env!("CARGO_CRATE_NAME").into(),
       auto_recovery: true,
-      _marker: Default::default(),
+      auto_saving: true,
     }
   }
 
@@ -31,6 +40,16 @@ impl<T: Sized + Serialize + DeserializeOwned + Default> AppConfigManager<T> {
 
   pub fn with_auto_recovery(mut self, value: bool) -> Self {
     self.set_auto_recovery(value);
+    self
+  }
+
+  pub fn set_auto_saving(&mut self, value: bool) -> &mut Self {
+    self.auto_saving = value;
+    self
+  }
+
+  pub fn with_auto_saving(mut self, value: bool) -> Self {
+    self.set_auto_saving(value);
     self
   }
 
@@ -54,24 +73,25 @@ impl<T: Sized + Serialize + DeserializeOwned + Default> AppConfigManager<T> {
     self
   }
 
-  pub fn load(&self) -> Result<T, Box<dyn Error>> {
-    if self.auto_recovery {
+  pub fn load(&self) -> Result<(), Box<dyn Error>> {
+    *self.data.as_ref().borrow_mut() = if self.auto_recovery {
       let path = self.get_user_config_path()?;
       if let Ok(value) = std::fs::read_to_string(&path) {
-        Ok(toml::from_str(&value).unwrap_or(T::default()))
+        toml::from_str(&value).unwrap_or(T::default())
       } else {
-        Ok(T::default())
+        T::default()
       }
     } else {
       let path = self.get_user_config_path()?;
       let value = std::fs::read_to_string(&path)?;
-      Ok(toml::from_str(&value)?)
-    }
+      toml::from_str(&value)?
+    };
+    Ok(())
   }
 
-  pub fn save(&self, app_config: &T) -> Result<(), Box<dyn Error>> {
+  pub fn save(&self) -> Result<(), Box<dyn Error>> {
     let path = self.get_user_config_path()?;
-    let toml = toml::to_string(app_config)?;
+    let toml = toml::to_string(&*self.data.as_ref().borrow())?;
     std::fs::write(&path, &toml.as_bytes())?;
     Ok(())
   }
@@ -91,8 +111,21 @@ impl<T: Sized + Serialize + DeserializeOwned + Default> AppConfigManager<T> {
   }
 }
 
+impl<T> Drop for AppConfigManager<T>
+where
+  T: Sized + Serialize + DeserializeOwned + Default,
+{
+  fn drop(&mut self) {
+    if self.auto_saving {
+      self.save().ok();
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
+  use std::{cell::RefCell, rc::Rc};
+
   use crate::AppConfigManager;
   use serde::{Deserialize, Serialize};
 
@@ -111,10 +144,10 @@ mod tests {
 
   #[test]
   fn it_works() {
-    let config1 = MyAppConfig::default();
-    let manager = AppConfigManager::<MyAppConfig>::new("sumibi-yakitori");
-    let config2 = manager.load().unwrap();
-    assert_eq!(config1, config2);
-    manager.save(&config2).unwrap();
+    let config = Rc::from(RefCell::from(MyAppConfig::default()));
+    let manager = AppConfigManager::new(config.clone(), "sumibi-yakitori");
+    manager.load().unwrap();
+    assert_eq!(*config.borrow(), MyAppConfig::default());
+    manager.save().unwrap();
   }
 }
