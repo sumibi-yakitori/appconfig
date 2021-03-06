@@ -1,45 +1,39 @@
+pub use serde;
 use serde::{de::DeserializeOwned, Serialize};
-use std::{cell::RefCell, error::Error, marker::PhantomData, path::PathBuf, rc::Rc};
-
-// pub trait AppConfig: Sized + Serialize + DeserializeOwned + Default {}
+use std::{cell::RefCell, error::Error, path::PathBuf, rc::Rc};
 
 pub struct AppConfigManager<T>
 where
-  T: Sized + Serialize + DeserializeOwned + Default,
+  T: Sized + Serialize + DeserializeOwned,
 {
   data: Rc<RefCell<T>>,
   organization_name: String,
   app_name: String,
-  auto_recovery: bool,
+  skip_parsing_error_when_loading: bool,
   auto_saving: bool,
-  // options: AppConfigManagerOptions<'a>,
-  // _marker: PhantomData<fn() -> T>,
 }
-
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct AppConfigManagerOptions<'a> { }
 
 impl<T> AppConfigManager<T>
 where
-  T: Sized + Serialize + DeserializeOwned + Default,
+  T: Sized + Serialize + DeserializeOwned,
 {
   pub fn new(data: Rc<RefCell<T>>, organization_name: impl Into<String>) -> Self {
     Self {
       data,
       organization_name: organization_name.into(),
       app_name: std::env!("CARGO_CRATE_NAME").into(),
-      auto_recovery: true,
       auto_saving: true,
+      skip_parsing_error_when_loading: true,
     }
   }
 
-  pub fn set_auto_recovery(&mut self, value: bool) -> &mut Self {
-    self.auto_recovery = value;
+  pub fn set_skip_parsing_error_when_loading(&mut self, value: bool) -> &mut Self {
+    self.skip_parsing_error_when_loading = value;
     self
   }
 
-  pub fn with_auto_recovery(mut self, value: bool) -> Self {
-    self.set_auto_recovery(value);
+  pub fn with_skip_parsing_error_when_loading(mut self, value: bool) -> Self {
+    self.set_skip_parsing_error_when_loading(value);
     self
   }
 
@@ -74,18 +68,15 @@ where
   }
 
   pub fn load(&self) -> Result<(), Box<dyn Error>> {
-    *self.data.as_ref().borrow_mut() = if self.auto_recovery {
-      let path = self.get_user_config_path()?;
-      if let Ok(value) = std::fs::read_to_string(&path) {
-        toml::from_str(&value).unwrap_or(T::default())
-      } else {
-        T::default()
+    let path = self.get_user_config_path()?;
+    let s = std::fs::read_to_string(&path)?;
+    if self.skip_parsing_error_when_loading {
+      if let Ok(value) = toml::from_str(&s) {
+        *self.data.as_ref().borrow_mut() = value;
       }
     } else {
-      let path = self.get_user_config_path()?;
-      let value = std::fs::read_to_string(&path)?;
-      toml::from_str(&value)?
-    };
+      *self.data.as_ref().borrow_mut() = toml::from_str(&s)?;
+    }
     Ok(())
   }
 
@@ -113,7 +104,7 @@ where
 
 impl<T> Drop for AppConfigManager<T>
 where
-  T: Sized + Serialize + DeserializeOwned + Default,
+  T: Sized + Serialize + DeserializeOwned,
 {
   fn drop(&mut self) {
     if self.auto_saving {
@@ -146,8 +137,8 @@ mod tests {
   fn it_works() {
     let config = Rc::from(RefCell::from(MyAppConfig::default()));
     let manager = AppConfigManager::new(config.clone(), "sumibi-yakitori");
+    manager.save().unwrap();
     manager.load().unwrap();
     assert_eq!(*config.borrow(), MyAppConfig::default());
-    manager.save().unwrap();
   }
 }
