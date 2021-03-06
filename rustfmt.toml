@@ -1,0 +1,5 @@
+control_brace_style = "ClosingNextLine"
+take_source_hints = true
+tab_spaces = 2
+# max_width = 80
+# fn_call_width = 10
