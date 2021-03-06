@@ -3,6 +3,17 @@ name = "appconfig"
 version = "0.1.0"
 authors = ["sumibi-yakitori <nekosoft360@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "A simple configuration file manager for applications"
+homepage = "https://github.com/sumibi-yakitori/appconfig"
+documentation = "https://docs.rs/appconfig"
+repository = "https://github.com/sumibi-yakitori/appconfig"
+readme = "README.md"
+categories = ["config"]
+keywords = ["configration", "app", "toml", "settings"]
+
+[badges]
+github = { repository = "sumibi-yakitori/appconfig", workflow = "Rust" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
