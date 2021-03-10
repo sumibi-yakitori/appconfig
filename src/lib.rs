@@ -48,7 +48,7 @@
 
 pub use serde;
 use serde::{de::DeserializeOwned, Serialize};
-use std::{cell::RefCell, error::Error, path::PathBuf, rc::Rc};
+use std::{cell::RefCell, error::Error, ops::Deref, path::PathBuf, rc::Rc};
 
 /// A manager that manages a single configuration file.
 ///
@@ -146,6 +146,10 @@ where
     Ok(())
   }
 
+  pub fn data(&self) -> &RefCell<T> {
+    &self.data
+  }
+
   fn get_user_config_path(&self) -> Result<PathBuf, Box<dyn Error>> {
     use std::io;
     let mut path = dirs_next::config_dir()
@@ -158,6 +162,17 @@ where
     }
     path = path.join("app_config.toml");
     Ok(path)
+  }
+}
+
+impl<T> Deref for AppConfigManager<T>
+where
+  T: Sized + Serialize + DeserializeOwned,
+{
+  type Target = RefCell<T>;
+
+  fn deref(&self) -> &Self::Target {
+    self.data()
   }
 }
 
