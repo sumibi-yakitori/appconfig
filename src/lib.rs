@@ -46,9 +46,11 @@
 //! }
 //! ```
 
+pub use anyhow;
 pub use serde;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{cell::RefCell, error::Error, ops::Deref, path::PathBuf, rc::Rc};
+pub type Result<T = ()> = anyhow::Result<T>;
 
 /// A manager that manages a single configuration file.
 ///
@@ -126,20 +128,21 @@ where
     self
   }
 
-  pub fn load(&self) -> Result<(), Box<dyn Error>> {
+  pub fn load(&self) -> Result {
     let path = self.get_user_config_path()?;
     let s = std::fs::read_to_string(&path)?;
     if self.skip_parsing_error_when_loading {
       if let Ok(value) = toml::from_str(&s) {
         *self.data.as_ref().borrow_mut() = value;
       }
-    } else {
+    }
+    else {
       *self.data.as_ref().borrow_mut() = toml::from_str(&s)?;
     }
     Ok(())
   }
 
-  pub fn save(&self) -> Result<(), Box<dyn Error>> {
+  pub fn save(&self) -> Result {
     let path = self.get_user_config_path()?;
     let toml = toml::to_string(&*self.data.as_ref().borrow())?;
     std::fs::write(&path, &toml.as_bytes())?;
@@ -150,7 +153,7 @@ where
     &self.data
   }
 
-  fn get_user_config_path(&self) -> Result<PathBuf, Box<dyn Error>> {
+  fn get_user_config_path(&self) -> Result<PathBuf> {
     use std::io;
     let mut path = dirs_next::config_dir()
       // TODO:

@@ -1,6 +1,6 @@
 [package]
 name = "appconfig"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["sumibi-yakitori <nekosoft360@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -21,3 +21,4 @@ github = { repository = "sumibi-yakitori/appconfig", workflow = "Rust" }
 toml = "0.5"
 serde = { version = "1.0", features = [ "derive" ] }
 dirs-next = "2.0"
+anyhow = "1.0"
