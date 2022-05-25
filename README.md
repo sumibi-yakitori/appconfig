@@ -18,13 +18,13 @@ The configuration file is read from and written to the following locations.
 ## Usage
 
 ```sh
-cargo add appconfig
+cargo add appconfig serde
 ```
 
 ```rust
 use std::{cell::RefCell, rc::Rc};
 use appconfig::AppConfigManager;
-use appconfig::serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct MyAppConfig {

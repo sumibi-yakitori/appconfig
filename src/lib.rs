@@ -11,13 +11,13 @@
 //! # Usage
 //!
 //! ```sh
-//! cargo add appconfig
+//! cargo add appconfig serde
 //! ```
 //!
 //! ```rust
 //! use std::{cell::RefCell, rc::Rc};
 //! use appconfig::AppConfigManager;
-//! use appconfig::serde::{Deserialize, Serialize};
+//! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Serialize, Deserialize, PartialEq)]
 //! struct MyAppConfig {
@@ -47,9 +47,8 @@
 //! ```
 
 pub use anyhow;
-pub use serde;
 use serde::{de::DeserializeOwned, Serialize};
-use std::{cell::RefCell, error::Error, ops::Deref, path::PathBuf, rc::Rc};
+use std::{cell::RefCell, ops::Deref, path::PathBuf, rc::Rc};
 pub type Result<T = ()> = anyhow::Result<T>;
 
 /// A manager that manages a single configuration file.
