@@ -1,6 +1,6 @@
 [package]
 name = "appconfig"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["sumibi-yakitori <nekosoft360@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -18,7 +18,7 @@ github = { repository = "sumibi-yakitori/appconfig", workflow = "Rust" }
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-toml = "0.5"
-serde = { version = "1.0", features = [ "derive" ] }
+toml = "0.8"
+serde = { version = "1.0", features = ["derive"] }
 dirs-next = "2.0"
 anyhow = "1.0"

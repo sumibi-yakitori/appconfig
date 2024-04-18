@@ -143,8 +143,8 @@ where
 
   pub fn save(&self) -> Result {
     let path = self.get_user_config_path()?;
-    let toml = toml::to_string(&*self.data.as_ref().borrow())?;
-    std::fs::write(&path, &toml.as_bytes())?;
+    let s = toml::to_string_pretty(&*self.data.as_ref().borrow())?;
+    std::fs::write(&path, &s.as_bytes())?;
     Ok(())
   }
 
